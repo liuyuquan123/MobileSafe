@@ -1,4 +1,5 @@
 package utils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +21,9 @@ public class InputStreamUtils {
 			while((temp = is.read(buffer))!=-1){
 				bos.write(buffer, 0, temp);
 			}
+		String	resultData = new String(bos.toByteArray());
 			//返回读取数据
-			return bos.toString();
+			return resultData;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}finally{
