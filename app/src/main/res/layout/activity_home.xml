@@ -2,15 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
-    <TextView 
-        android:id="@+id/tv_text"
-        android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="hello"
-		android:textSize="30dp"
-		       
-        />
-    
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/Title"
+        android:text="功能列表" />
+
+    <cn.liu.mobilesafe.view.TextViewScolling
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        android:text="想一件事就要立刻去做，不要想后果，也不要看结果，只体会其中做事的感觉，相信自己的感觉，不会错，每天在生活，工作中，体会每天的充实，那样的人生才叫完美，才能体现人生的价值，一生才能无憾！"
+        android:textColor="#000"
+        android:textSize="20dp" />
+
+    <GridView
+        android:id="@+id/gv_home"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:numColumns="3"
+        android:verticalSpacing="10dp">
+
+
+    </GridView>
+
 
 </LinearLayout>

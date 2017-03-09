@@ -1,4 +1,4 @@
-package cn.liu.mobilesafe;
+package cn.liu.mobilesafe.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,22 +19,26 @@ import java.net.URL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
-import utils.InputStreamUtils;
-import utils.ToastUtils;
+import cn.liu.mobilesafe.R;
+import cn.liu.mobilesafe.utils.ContantValues;
+import cn.liu.mobilesafe.utils.InputStreamUtils;
+import cn.liu.mobilesafe.utils.SpUtils;
+import cn.liu.mobilesafe.utils.ToastUtils;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
+import android.view.animation.AlphaAnimation;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class SplashActivity extends AppCompatActivity {
     private TextView vn;
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "SplashActivity";
     protected static final int UPDATE_VERSION = 100;
     protected static final int ENTER_MAIN = 101;
     protected static final int IO_ERROR = 102;
@@ -45,47 +49,36 @@ public class MainActivity extends AppCompatActivity {
     private String download_url;
 
 
-    private Handler handler = new Handler() {
+    private Handler mHandler = new Handler() {
 
         public void handleMessage(android.os.Message msg) {
             switch (msg.what) {
                 case ENTER_MAIN:
-//                    Log.d(TAG, "llll");
                     //进入主界面
                     enterHomeActivity();
 
                     break;
                 case URL_ERROR:
-                    ToastUtils.showToast(MainActivity.this, "url错误");
+                    ToastUtils.showToast(SplashActivity.this, "url错误");
                     enterHomeActivity();
                     break;
                 case JSON_ERROR:
-                    ToastUtils.showToast(MainActivity.this, "json解析错误");
+                    ToastUtils.showToast(SplashActivity.this, "json解析错误");
                     enterHomeActivity();
                     break;
                 case UPDATE_VERSION:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("是否更新软件");
-                    builder.setMessage(description);
-                    builder.setPositiveButton("立即更新", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //请求更新
-                            downloadApk();
+                    boolean update = (boolean) SpUtils.get(getApplicationContext(), ContantValues.OPEN_UPDATE, false);
+                    if (update){
+                        UpdateApp();
+                    }else {
+                        //在handler发送消息四秒后处理ENTER_MAIN状态码对应的消息
+                        mHandler.sendEmptyMessageDelayed(ENTER_MAIN,4000);
+                    }
 
-                        }
-                    });
-                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            enterHomeActivity();
-                        }
-                    });
-                    builder.show();
 
                     break;
                 case IO_ERROR:
-                    ToastUtils.showToast(MainActivity.this, "io异常");
+                    ToastUtils.showToast(SplashActivity.this, "io异常");
                     enterHomeActivity();
                     break;
 
@@ -95,6 +88,45 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+
+
+
+        /**
+         *是否更新app
+         */
+
+        private  void  UpdateApp(){
+            AlertDialog.Builder builder = new AlertDialog.Builder(SplashActivity.this);
+            builder.setTitle("是否更新软件");
+            builder.setMessage(description);
+            builder.setPositiveButton("立即更新", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //请求更新
+                    downloadApk();
+
+                }
+            });
+            builder.setNegativeButton("稍后更新", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    enterHomeActivity();
+                }
+            });
+            builder.show();
+            builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    enterHomeActivity();
+                    dialog.dismiss();
+                }
+            });
+
+
+        }
+
+
+
 
 
         /**
@@ -157,7 +189,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     };
-   //安装apk
+    private RelativeLayout rlroot;
+
+    //安装apk
     private void installApk(File file) {
         //系统应用界面,源码,安装apk入口
         Intent intent = new Intent("android.intent.action.VIEW");
@@ -170,6 +204,14 @@ public class MainActivity extends AppCompatActivity {
 //		startActivity(intent);
         startActivityForResult(intent, 0);
 
+    }
+
+
+    //开启一个activity后，返回结果后调用的方法
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        enterHomeActivity();
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     //进入主界面
@@ -188,9 +230,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         vn = (TextView) findViewById(R.id.tv_version_name);
+        rlroot = (RelativeLayout) findViewById(R.id.rl_root);
         initData();
+        StartAnimation();
     }
 
+    private void StartAnimation() {
+        //渐变动画
+        AlphaAnimation alphaAnimation = new AlphaAnimation(0,1);
+        alphaAnimation.setDuration(2000);
+        //为控件设置动画
+        rlroot.startAnimation(alphaAnimation);
+
+    }
+
+
+    //初始化数据
     private void initData() {
         String versionName = getVersionName();
         mVersionCode = getVersionCode();
@@ -199,6 +254,8 @@ public class MainActivity extends AppCompatActivity {
         vn.setText("版本名称" + versionName);
 
     }
+
+
 
     private void getDataFromServer() {
 
@@ -265,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    handler.sendMessage(msg);
+                    mHandler.sendMessage(msg);
 
                 }
 
